@@ -1,0 +1,43 @@
+#:import NoTransition kivy.uix.screenmanager.NoTransition
+#:import SlideTransition kivy.uix.screenmanager.SlideTransition
+
+WindowManager:
+    MainWindow:
+
+
+<MainWindow>:
+    name: "main"
+
+    FloatLayout:
+        orientation: 'horizontal'
+        canvas:
+            Rectangle:
+                source: 'logo1.jpg'
+                size: self.size
+                pos: self.pos
+                
+        Label:
+            pos_hint:{'center_x': .5, 'center_y': .8}
+            size_hint: 0.4, 0.4
+            text: "PK-4 Data Pipeline"
+            font_size: (root.width/30 + root.height/30)
+            
+        TextInput:
+            pos_hint:{'center_x': .5, 'center_y': .3}
+            size_hint:0.3, 0.05
+            hint_text: 'Enter Data-Path'
+            halign: 'center'
+            
+        Button:
+            pos_hint:{'center_x': .5, 'center_y': .23}
+            size_hint:0.3, 0.05
+            text: "Perform Data Reduction"
+
+FloatLayout:
+            Image:
+                source:'pk4-logo.png'
+                allow_strech: True
+                kepp_ratio: True
+                size_hint: None, None
+                size: self.width, toolbar.height/2
+                pos: toolbar.width-self.width/1.33, toolbar.y+self.height 

@@ -1,0 +1,69 @@
+from kivy.lang import Builder
+from kivy.uix.image import Image
+from kivy.uix.floatlayout import FloatLayout
+ 
+from kivymd.app import MDApp
+from kivymd.uix.floatlayout import MDFloatLayout
+from kivymd.uix.tab import MDTabsBase
+
+KV = """
+MDBoxLayout:
+    orientation: 'vertical'
+    
+    MDToolbar:
+        id: toolbar
+        type_height: 'small'
+        title: 'PK-4 Pipeline' 
+            
+        FloatLayout:
+            Image:
+                source:'pk4-logo.png'
+                allow_strech: True
+                kepp_ratio: True
+                size_hint: None, None
+                size: self.width, toolbar.height/2
+                pos: toolbar.width-self.width/1.33, toolbar.y+self.height 
+        
+    MDTabs:
+        id: tabs
+        on_tab_switch: app.on_tab_switch(*args)
+
+<Tab>:
+
+    MDLabel:
+        id: label
+        halign: 'center'
+"""
+
+
+class Tab(MDFloatLayout, MDTabsBase):
+    """Class implementing content for a tab."""
+
+
+class Testwindow(MDApp):
+    def build(self):
+        return Builder.load_string(KV)
+
+    def on_start(self):
+        self.root.ids.tabs.add_widget(Tab(title=f"Data Read In"))
+        self.root.ids.tabs.add_widget(Tab(title=f"Data Reduction"))
+        self.root.ids.tabs.add_widget(Tab(title=f"First Insight"))
+        self.root.ids.tabs.add_widget(Tab(title=f"Exp Setup"))
+
+    def on_tab_switch(
+        self, instance_tabs, instance_tab, instance_tab_label, tab_text
+    ):
+        """Called when the tab is switched.
+
+        :type instance_tabs: <kivymd.uix.tab.MDTabs object>;
+        :param instance_tab: <__main__.Tab object>;
+        :param instance_tab_label: <kivymd.uix.tab.MDTabsLabel object>;
+        :param tab_text: text or name icon of tab;
+        """
+        if tab_text == 'Exp Setup':
+            instance_tab.ids.label.add_widget(Image(source='pk4-setup.png',size_hint='1,1'))    
+        else:
+            instance_tab.ids.label.text = f" This is the content of {tab_text}"
+
+
+Testwindow().run()
