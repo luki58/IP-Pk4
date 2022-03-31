@@ -1,7 +1,10 @@
+import os
+
 from kivy.lang import Builder
 from kivy.uix.image import Image
 from kivy.uix.floatlayout import FloatLayout
- 
+from kivy.core.window import Window 
+
 from kivymd.app import MDApp
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.tab import MDTabsBase
@@ -9,7 +12,8 @@ from kivymd.uix.tab import MDTabsBase
 KV = """
 BoxLayout:
     orientation: 'vertical'
-    
+    id: boxlay
+
     MDToolbar:
         id: toolbar
         type_height: 'small'
@@ -28,15 +32,17 @@ BoxLayout:
             title: 'Data Read In'
             
             TextInput:
+                id: path
                 pos_hint:{'center_x': .5, 'center_y': .7}
-                size_hint:0.3, 0.07
+                size_hint:0.5, 0.07
                 hint_text: 'Enter Data-Path'
                 halign: 'center'
             
-            Button:
+            MDFillRoundFlatButton:
                 pos_hint:{'center_x': .5, 'center_y': .6}
-                size_hint:0.3, 0.07
+                size_hint:0.2, 0.07
                 text: "Perform Data Reduction"
+                on_press: app.inputpath()
                 
         Tab:
             id: reduction
@@ -63,9 +69,16 @@ BoxLayout:
 class Tab(MDFloatLayout, MDTabsBase):
     """Class implementing content for a tab."""
 
-
-class Testwindow(MDApp):
+class Ippk4App(MDApp):
     def build(self):
         return Builder.load_string(KV)
+    
+    def inputpath(self):
+        path = self.root.ids.path.text
+        if os.path.exists(path) == True:
+            print(f'The path is: {path}')
+        else:
+            print('No path found, try again')
 
-Testwindow().run()
+if __name__ == "__main__":
+    Ippk4App().run()
