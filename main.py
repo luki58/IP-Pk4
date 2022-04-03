@@ -107,8 +107,7 @@ class Ippk4App(MDApp):
             self.root.ids.path.hint_text = 'Path does NOT exist. Try again!'
             
         self.root.ids.spinner.active = False
-        
-        return data
+
 
 if __name__ == "__main__":
     Ippk4App().run()
