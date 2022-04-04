@@ -8,59 +8,92 @@ import pims
 
 # img read
 data = pims.open('screw/*.bmp')
+bg = pims.open('background/background00.bmp')
 #use empty background frame to subtract noise
 
 ### --- Generate Greyscale Horizontal ---- ###
 
-def grayscale_h(frame):
+def grayscale_h(frame,res_step):
     imgshape = frame.shape
-    grayscale = np.empty(imgshape[1], dtype=float)
+    grayscale = np.empty(int(imgshape[1]/res_step)+1, dtype=float)
     
-    for column in range(imgshape[1]):
-        sumpixel=0;
-        for row in frame:
-            sumpixel += row[column];
-        grayscale[column] = sumpixel/imgshape[0];
+    for column in range(0,imgshape[0],res_step):
+        sumpixel = 0
+        for row in range(0,imgshape[1],res_step):
+            sumpixel += frame[row][column]
+        grayscale[int(column/res_step)] = sumpixel/int(imgshape[0]/res_step);
     return grayscale
-
 
 ### --- Generate Greyscale Vertical ---- ###
        
-def grayscale_v(frame):
+def grayscale_v(frame,res_step):
+    count = 0
     imgshape = frame.shape
-    grayscale = np.empty(imgshape[0], dtype=float)
-    numrow=0;
+    grayscale = np.empty(int(imgshape[1]/res_step)+1, dtype=float)
     
-    for row in frame:
-        sumpixel=0;
-        for column in range(imgshape[0]):
-            sumpixel += row[column];
-        grayscale[numrow] = sumpixel/imgshape[0];
-        numrow+=1;
+    for column in range(0,imgshape[0],res_step):
+        sumpixel = 0
+        count += 1
+        for row in range(0,imgshape[1],res_step):
+            sumpixel += frame[column][row]
+        grayscale[int(column/res_step)] = sumpixel/int(imgshape[0]/res_step);
     return grayscale
+
+### --- Flux Over Time --- ###
+
+def flux(data,res_step):
+    pointer = 0
+    imgshape = data[0].shape
+    flux = np.empty(len(data), dtype=float)
+    
+    for frame in data:
+        grayscale = np.empty(int(imgshape[1]/res_step)+1, dtype=float)
+        for column in range(0,imgshape[0],res_step):
+            sumpixel = 0
+            for row in range(0,imgshape[1],res_step):
+                sumpixel += frame[row][column]
+            grayscale[int(column/res_step)] = sumpixel/int(imgshape[0]/res_step);
+        flux[pointer] = flux[pointer] + sum(grayscale)
+        pointer += 1
+    plot(flux)
+    #return flux
 
 ### --- Sience Grayscale Plot --- ###
 
-def grayscaleplot2(data, data2):
-    arr_ref =  np.arange(len(data))
-    arr_ref2 =  np.arange(len(data2))
-    fig, ax = plt.subplots()
-    fig.set_size_inches(18.5, 10.5)
-    #fig.savefig('test2png.png', dpi=100)
-    
-    #color pattern: '#00429d' blue, '#b03a2e' red, '#1e8449' green
-    ax.plot(arr_ref, data, color='#00429d', label='x')
-    ax.plot(data2, arr_ref, color='#b03a2e', label='y')
+def grayscaleplot2(datah, datav):
+    arr_ref =  np.arange(len(datah))
+    arr_ref2 =  np.arange(len(datav))
+
+    plt.style.use(['science','no-latex'])
+    fig, ax = plt.subplots(dpi=300)
+
+    ax.plot(arr_ref, datah*20, label='x')
+    ax.plot(datav*20, arr_ref2, label='y')
+
     ax.legend()
-    
+    ax.autoscale(tight=True)
+    #adds major gridlines
+    ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+
+    #change axis direction
+    ax.invert_yaxis()
+    ax.xaxis.tick_top()
+    ax.xaxis.set_label_position('top')
+
     #adds a title and axes labels
     #ax.set_title('')
-    plt.xlabel('Pixel')
-    plt.ylabel('Grayvalue')
- 
+    #plt.xlabel('Pixel')
+    #plt.ylabel('Grayvalue')
+    
+    #change axis direction
+    #ax.invert_yaxis()
+    #ax.xaxis.tick_top()
+    #ax.xaxis.set_label_position('top')
+    #ax.xaxis.set
+    
     #removing top and right borders
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False) 
+    #ax.spines['top'].set_visible(False)
+    #ax.spines['right'].set_visible(False) 
     
     #Edit tick 
     #ax.xaxis.set_minor_locator(MultipleLocator(125))
@@ -71,10 +104,63 @@ def grayscaleplot2(data, data2):
     #ax.axvline(right, linestyle='dashed', color='b');
 
     #adds major gridlines
-    ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+    #ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
     
     #ax limit
-    ax.set_xlim(xmin=0)
+    #ax.set_xlim(xmin=0)
+    
+    #legend
+    #ax.legend(bbox_to_anchor=(1, 1), loc=1, frameon=False, fontsize=16)
+    
+    plt.show()
+
+def plot(data):
+    arr_ref =  np.arange(len(data))
+
+    plt.style.use(['science','no-latex'])
+    fig, ax = plt.subplots(dpi=300)
+
+    ax.plot(arr_ref, data, label='flux')
+
+    ax.legend()
+    ax.autoscale(tight=True)
+    #adds major gridlines
+    ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+
+    #change axis direction
+    #ax.invert_yaxis()
+    #ax.xaxis.tick_top()
+    #ax.xaxis.set_label_position('top')
+    ax.axes.yaxis.set_ticklabels([])
+
+    #adds a title and axes labels
+    #ax.set_title('')
+    #plt.xlabel('Pixel')
+    #plt.ylabel('Grayvalue')
+    
+    #change axis direction
+    #ax.invert_yaxis()
+    #ax.xaxis.tick_top()
+    #ax.xaxis.set_label_position('top')
+    #ax.xaxis.set
+    
+    #removing top and right borders
+    #ax.spines['top'].set_visible(False)
+    #ax.spines['right'].set_visible(False) 
+    
+    #Edit tick 
+    #ax.xaxis.set_minor_locator(MultipleLocator(125))
+    #ax.yaxis.set_minor_locator(MultipleLocator(.25))
+
+    #add vertical lines
+    #ax.axvline(left, linestyle='dashed', color='b');
+    #ax.axvline(right, linestyle='dashed', color='b');
+
+    #adds major gridlines
+    #ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
+    
+    #ax limit
+    #ax.set_xlim(xmin=0)
     
     #legend
     #ax.legend(bbox_to_anchor=(1, 1), loc=1, frameon=False, fontsize=16)
@@ -85,16 +171,23 @@ def grayscaleplot2(data, data2):
 
 def dataoverview(data):
     frame0 = data[0]
-    x = np.empty(frame0.shape[1])
-    y = np.empty(frame0.shape[0])
-    for i in data:
-        x = x + grayscale_h(i)
-        y = y + grayscale_v(i)
-    x = x/len(data)
-    y = y/len(data)
-    print(x)
-    print(y)
-    #grayscaleplot2(x, y)
+    res_step = 10
+    imgshape = data[0].shape
+    grayscaleh = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
+    grayscalev = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
+    
+    for frame in data:
+        grayscaleh += grayscale_h(frame,res_step)
+        grayscalev += grayscale_v(frame,res_step)        
+    grayscaleh = grayscaleh/len(data)
+    grayscalev = grayscalev/len(data)
+    
+    grayscaleplot2(grayscaleh, grayscalev)
     
 ## main ##
-dataoverview(data)
+
+#dataoverview(data)
+
+flux(data,40)
+
+#averageflux over time
