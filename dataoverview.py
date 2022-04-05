@@ -1,14 +1,13 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.ticker import MultipleLocator
 import pims
 
 # change the following to %matplotlib notebook for interactive plotting
 #get_ipython().run_line_magic('matplotlib', 'inline')
 
 # img read
-data = pims.open('screw/*.bmp')
-bg = pims.open('background/background00.bmp')
+#data = pims.open('screw/*.bmp')
+#bg = pims.open('background/background00.bmp')
 #use empty background frame to subtract noise
 
 ### --- Generate Greyscale Horizontal ---- ###
@@ -39,25 +38,6 @@ def grayscale_v(frame,res_step):
         grayscale[int(column/res_step)] = sumpixel/int(imgshape[0]/res_step);
     return grayscale
 
-### --- Flux Over Time --- ###
-
-def flux(data,res_step):
-    pointer = 0
-    imgshape = data[0].shape
-    flux = np.empty(len(data), dtype=float)
-    
-    for frame in data:
-        grayscale = np.empty(int(imgshape[1]/res_step)+1, dtype=float)
-        for column in range(0,imgshape[0],res_step):
-            sumpixel = 0
-            for row in range(0,imgshape[1],res_step):
-                sumpixel += frame[row][column]
-            grayscale[int(column/res_step)] = sumpixel/int(imgshape[0]/res_step);
-        flux[pointer] = flux[pointer] + sum(grayscale)
-        pointer += 1
-    plot(flux)
-    #return flux
-
 ### --- Sience Grayscale Plot --- ###
 
 def grayscaleplot2(datah, datav):
@@ -77,8 +57,8 @@ def grayscaleplot2(datah, datav):
 
     #change axis direction
     ax.invert_yaxis()
-    ax.xaxis.tick_top()
-    ax.xaxis.set_label_position('top')
+    #ax.xaxis.tick_top()
+    #ax.xaxis.set_label_position('top')
 
     #adds a title and axes labels
     #ax.set_title('')
@@ -167,11 +147,30 @@ def plot(data):
     
     plt.show()
 
+### --- Flux Over Time --- ###
+
+def Flux(data,res_step):
+    pointer = 0
+    imgshape = data[0].shape
+    flux = np.empty(len(data), dtype=float)
+    
+    for frame in data:
+        grayscale = np.empty(int(imgshape[1]/res_step)+1, dtype=float)
+        for column in range(0,imgshape[0],res_step):
+            sumpixel = 0
+            for row in range(0,imgshape[1],res_step):
+                sumpixel += frame[row][column]
+            grayscale[int(column/res_step)] = sumpixel/int(imgshape[0]/res_step);
+        flux[pointer] = flux[pointer] + sum(grayscale)
+        pointer += 1 
+    #plot(flux)   
+    return flux
+    
+
 ### --- Data Overview ---- ###
 
-def dataoverview(data):
-    frame0 = data[0]
-    res_step = 10
+def Dataoverview(data):
+    res_step = 20
     imgshape = data[0].shape
     grayscaleh = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
     grayscalev = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
@@ -182,12 +181,10 @@ def dataoverview(data):
     grayscaleh = grayscaleh/len(data)
     grayscalev = grayscalev/len(data)
     
-    grayscaleplot2(grayscaleh, grayscalev)
+    #grayscaleplot2(grayscaleh, grayscalev)
+    return grayscaleh, grayscalev
     
 ## main ##
 
 #dataoverview(data)
-
-flux(data,40)
-
-#averageflux over time
+#flux(data,40)

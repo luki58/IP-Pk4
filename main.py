@@ -1,16 +1,21 @@
 import os
+import numpy as np
+import matplotlib.pyplot as plt
 #from PIL import Image as ImageImport
 
 from kivy.lang import Builder
 from kivy.uix.image import Image
 from kivy.uix.floatlayout import FloatLayout
 from kivy.core.window import Window 
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg
 
 from kivymd.app import MDApp
 from kivymd.uix.floatlayout import MDFloatLayout
 from kivymd.uix.tab import MDTabsBase
 
 import pims
+
+from dataoverview import Flux, Dataoverview 
 
 KV = """
 BoxLayout:
@@ -29,10 +34,10 @@ BoxLayout:
             id: readin
             title: 'Data Read In'
             
-            TextInput:
+            MDTextField:
                 id: path
                 pos_hint:{'center_x': .5, 'center_y': .64}
-                size_hint:0.5, 0.07
+                size: dp(100), dp(30)
                 hint_text: 'Enter Data-Path'
                 halign: 'center'
             
@@ -45,7 +50,7 @@ BoxLayout:
             
             MDFillRoundFlatButton:
                 pos_hint:{'center_x': .5, 'center_y': .5}
-                size_hint:0.1, 0.07
+                size: dp(30), dp(15)
                 text: "Load Data"
                 on_press: app.inputpath()
         
@@ -59,6 +64,27 @@ BoxLayout:
         Tab:
             id: reduction
             title: 'Data Reduction'
+            
+            MDBoxLayout:
+                id:fluxbox
+                orientation: 'horizontal'
+                pos_hint:{'center_x': .35, 'center_y': .7}
+                kepp_ratio: True
+                allow_strech: True
+                size_hint: (.55,.3)   
+                
+            MDFillRoundFlatButton:
+                pos_hint:{'center_x': .75, 'center_y': .7}
+                size: dp(15), dp(15)
+                text: "Go Flux"
+                on_press: app.overview()
+                    
+            MDSpinner:
+                id: redspinner
+                size_hint: None, None
+                size: dp(20), dp(20)
+                pos_hint:{'center_x': .95, 'center_y': .7}
+                active: False
             
         Tab:
             id: insight
@@ -85,6 +111,8 @@ class Tab(MDFloatLayout, MDTabsBase):
 
 class Ippk4App(MDApp):
     def build(self):
+        self.theme_cls.theme_style = "Dark"
+        #self.theme_cls.primary_palette = "BlueGray"
         return Builder.load_string(KV)
     
     def inputpath(self):
@@ -99,15 +127,31 @@ class Ippk4App(MDApp):
                     datacheck = True
                     break;
             if datacheck != False:
-                data = pims.open(path+"\*.bmp")    
+                global Data_raw
+                Data_raw = pims.open(path+"\*.bmp")    
                 self.root.ids.path.hint_text = 'Loaded Successfully'
             else:
                 self.root.ids.path.hint_text = 'No \*.bmp data found'
         else:
             self.root.ids.path.hint_text = 'Path does NOT exist. Try again!'
             
-        self.root.ids.spinner.active = False
+        self.root.ids.spinner.active = False        #hide loading item
 
+    def overview(self):
+        self.root.ids.fluxbox.clear_widgets()
+        self.root.ids.redspinner.active = True         #display loading item
+        #
+        flux_data = Flux(Data_raw, 40)
+        #
+        arr_ref =  np.arange(len(flux_data))
+        plt.style.use(['science','no-latex'])
+        fig, ax = plt.subplots(dpi=80)
+        ax.plot(arr_ref, flux_data)
+        ax.grid(color='grey', linestyle='-', linewidth=0.2, alpha=0.5)
+        #
+        self.root.ids.fluxbox.add_widget(FigureCanvasKivyAgg(plt.gcf()))
+        self.root.ids.redspinner.active = False        #hide loading item
+        
 
 if __name__ == "__main__":
     Ippk4App().run()
