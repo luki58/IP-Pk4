@@ -41,3 +41,18 @@ FloatLayout:
                 size_hint: None, None
                 size: self.width, toolbar.height/2
                 pos: toolbar.width-self.width/1.33, toolbar.y+self.height 
+                
+            MDFillRoundFlatButton:
+                pos_hint:{'center_x': .75, 'center_y': .7}
+                size: dp(15), dp(15)
+                text: "Go Flux"
+                on_press: 
+                    spinner.active = True
+                    app.flux()
+                     
+            MDSpinner:
+                id: spinner
+                size_hint: None, None
+                size: dp(46), dp(46)
+                pos_hint:{'center_x': .35, 'center_y': .7}
+                active: True if app.flux else False

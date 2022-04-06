@@ -41,13 +41,6 @@ BoxLayout:
                 hint_text: 'Enter Data-Path'
                 halign: 'center'
             
-            MDSpinner:
-                id: spinner
-                size_hint: None, None
-                size: dp(46), dp(46)
-                pos_hint: {'center_x': .5, 'center_y': .3}
-                active: False
-            
             MDFillRoundFlatButton:
                 pos_hint:{'center_x': .5, 'center_y': .5}
                 size: dp(30), dp(15)
@@ -64,7 +57,7 @@ BoxLayout:
         Tab:
             id: reduction
             title: 'Data Reduction'
-            
+        
             MDBoxLayout:
                 id:fluxbox
                 orientation: 'horizontal'
@@ -74,17 +67,12 @@ BoxLayout:
                 size_hint: (.55,.3)   
                 
             MDFillRoundFlatButton:
+                id:fluxbutton
                 pos_hint:{'center_x': .75, 'center_y': .7}
                 size: dp(15), dp(15)
                 text: "Go Flux"
-                on_press: app.overview()
-                    
-            MDSpinner:
-                id: redspinner
-                size_hint: None, None
-                size: dp(20), dp(20)
-                pos_hint:{'center_x': .95, 'center_y': .7}
-                active: False
+                on_press: app.flux()
+                disabled: True
             
         Tab:
             id: insight
@@ -117,7 +105,6 @@ class Ippk4App(MDApp):
     
     def inputpath(self):
         path = self.root.ids.path.text
-        self.root.ids.spinner.active = True         #display loading item
         self.root.ids.path.text = ''
         if os.path.exists(path) == True:            #read data
             datalist = os.listdir(path)
@@ -130,27 +117,28 @@ class Ippk4App(MDApp):
                 global Data_raw
                 Data_raw = pims.open(path+"\*.bmp")    
                 self.root.ids.path.hint_text = 'Loaded Successfully'
+                self.root.ids.fluxbutton.disabled = False
             else:
                 self.root.ids.path.hint_text = 'No \*.bmp data found'
+                self.root.ids.fluxbutton.disabled = True
         else:
             self.root.ids.path.hint_text = 'Path does NOT exist. Try again!'
-            
-        self.root.ids.spinner.active = False        #hide loading item
+            self.root.ids.fluxbutton.disabled = True
 
-    def overview(self):
+    def flux(self):
         self.root.ids.fluxbox.clear_widgets()
-        self.root.ids.redspinner.active = True         #display loading item
         #
         flux_data = Flux(Data_raw, 40)
         #
+        #self.root.ids.spinner.active = False        #hide loading item
         arr_ref =  np.arange(len(flux_data))
         plt.style.use(['science','no-latex'])
         fig, ax = plt.subplots(dpi=80)
         ax.plot(arr_ref, flux_data)
         ax.grid(color='grey', linestyle='-', linewidth=0.2, alpha=0.5)
-        #
+        #                            
         self.root.ids.fluxbox.add_widget(FigureCanvasKivyAgg(plt.gcf()))
-        self.root.ids.redspinner.active = False        #hide loading item
+               
         
 
 if __name__ == "__main__":
