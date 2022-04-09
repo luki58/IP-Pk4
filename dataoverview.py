@@ -14,7 +14,7 @@ import pims
 
 def grayscale_h(frame,res_step):
     imgshape = frame.shape
-    grayscale = np.empty(int(imgshape[1]/res_step)+1, dtype=float)
+    grayscale = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
     
     for column in range(0,imgshape[0],res_step):
         sumpixel = 0
@@ -28,7 +28,7 @@ def grayscale_h(frame,res_step):
 def grayscale_v(frame,res_step):
     count = 0
     imgshape = frame.shape
-    grayscale = np.empty(int(imgshape[1]/res_step)+1, dtype=float)
+    grayscale = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
     
     for column in range(0,imgshape[0],res_step):
         sumpixel = 0
@@ -152,25 +152,23 @@ def plot(data):
 def Flux(data,res_step):
     pointer = 0
     imgshape = data[0].shape
-    flux = np.empty(len(data), dtype=float)
+    flux = np.zeros(len(data), dtype=float)
     
     for frame in data:
         grayscale = np.empty(int(imgshape[1]/res_step)+1, dtype=float)
         for column in range(0,imgshape[0],res_step):
             sumpixel = 0
             for row in range(0,imgshape[1],res_step):
-                sumpixel += frame[row][column]
+                sumpixel += frame[column][row]
             grayscale[int(column/res_step)] = sumpixel/int(imgshape[0]/res_step);
         flux[pointer] = flux[pointer] + sum(grayscale)
         pointer += 1 
     #plot(flux)   
     return flux
     
-
 ### --- Data Overview ---- ###
 
-def Dataoverview(data):
-    res_step = 20
+def Dataoverview(data, res_step):
     imgshape = data[0].shape
     grayscaleh = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
     grayscalev = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
@@ -186,5 +184,6 @@ def Dataoverview(data):
     
 ## main ##
 
-#dataoverview(data)
-#flux(data,40)
+#dataoverview(data,40)
+#a = Flux(data,40)
+#x = np.linspace(0,len(a)-1,len(a))
