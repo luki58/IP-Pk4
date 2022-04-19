@@ -63,38 +63,72 @@ BoxLayout:
             BoxLayout:
                 id:fluxbox
                 orientation: 'horizontal'
-                pos_hint:{'center_x': .35, 'center_y': .75}
+                pos_hint:{'center_x': .4, 'center_y': .75}
                 kepp_ratio: True
                 allow_strech: True
-                size_hint: (.55,.3)
-            
-            MDSlider:
-                id:slider1
-                pos_hint:{'center_x': .35, 'center_y': .6}
-                size_hint_x: .55
-                min: 0
-                max: 100
-            
-            MDSlider:
-                id:slider2
-                pos_hint:{'center_x': .35, 'center_y': .55}
-                size_hint_x: .55
-                min: 0
-                max: 100
-                value: self.max
+                size_hint: (.7,.4)
             
             MDFloatingActionButton:
                 icon: "information-variant"
                 font_size: "18sp"
-                pos_hint:{'center_x': .75, 'center_y': .75}
+                pos_hint:{'center_x': .85, 'center_y': .7}
             
             MDFillRoundFlatButton:
                 id:fluxbutton
-                pos_hint:{'center_x': .75, 'center_y': .85}
+                pos_hint:{'center_x': .85, 'center_y': .85}
                 size: dp(15), dp(15)
                 text: "Go Flux"
                 on_press: app.flux()
                 disabled: True
+                
+            BoxLayout:
+                id:range1
+                orientation: 'horizontal'
+                pos_hint:{'center_x': .42, 'center_y': .4}
+                size_hint: (.3,.3)
+                spacing: "20dp"
+                padding: "20dp"
+                
+                MDFloatingActionButton:
+                    icon: "plus"
+                    font_size: "18sp"
+                    pos_hint:{'center_y': .5}
+                
+                MDTextFieldRect:
+                    size_hint: 1, None
+                    height: "30dp"
+                    pos_hint:{'center_y': .5}
+                    input_filter: 'int'
+                    
+                MDFloatingActionButton:
+                    icon: "minus"
+                    font_size: "18sp"
+                    pos_hint:{'center_y': .5}
+                
+            BoxLayout:
+                id:range2
+                orientation: 'horizontal'
+                pos_hint:{'center_x': .42, 'center_y': .25}
+                size_hint: (.3,.3)
+                spacing: "20dp"
+                padding: "20dp"
+                    
+                MDFloatingActionButton:
+                    icon: "plus"
+                    font_size: "18sp"
+                    pos_hint:{'center_y': .5}
+                
+                MDTextFieldRect:
+                    size_hint: 1, None
+                    height: "30dp"
+                    input_filter: 'int'
+                    pos_hint:{'center_y': .5}
+                    
+                MDFloatingActionButton:
+                    icon: "minus"
+                    font_size: "18sp"
+                    pos_hint:{'center_y': .5}
+                
             
         Tab:
             id: imagereduction
@@ -109,14 +143,14 @@ BoxLayout:
                 size_hint: (.4,.4)
             
             MDSlider:
-                id:slider3
+                id:slider1
                 pos_hint:{'center_x': .35, 'center_y': .2}
                 size_hint_x: .55
                 min: 0
                 max: 100
             
             MDSlider:
-                id:slider4
+                id:slider2
                 pos_hint:{'center_x': .35, 'center_y': .1}
                 size_hint_x: .55
                 min: 0
@@ -144,7 +178,7 @@ BoxLayout:
             id: setup
             title: 'Exp Setup'
             Image:
-                source: 'imgs/pk4-setup.png'
+                source: 'imgs/pk4-setup110422.png'
 
 <Tab>:
 
@@ -201,10 +235,10 @@ class Ippk4App(MDApp):
         elif self.datalen >= 300:
             flux_data = Flux(Data_raw, 140) 
         #
-        graph = Graph(xlabel='Frames', ylabel='Flux', x_ticks_minor=5,
-        y_grid_label=True, x_grid_label=True, padding=5, x_ticks_major=10, y_ticks_major=10,
-        x_grid=True, y_grid=True, xmin=-0, xmax=len(flux_data), ymin=int(np.amin(flux_data)-0.5), ymax=int(np.amax(flux_data)+0.5))
-        plot = LinePlot(color=[0, 0, 1, 1], line_width=1.5)
+        graph = Graph(xlabel='Frames', ylabel='Flux', y_ticks_minor=2,
+        y_grid_label=True, x_grid_label=True, y_ticks_major=3, x_ticks_major= int(self.datalen/11), x_ticks_minor=2,
+        x_grid=True, y_grid=True, xmin=0, xmax=len(flux_data), ymin=int(np.amin(flux_data)-0.5), ymax=int(np.amax(flux_data)+0.5))
+        plot = LinePlot(color=[0, 0, 1, 1], line_width=1.2)
         plot.points = [(x,flux_data[x]) for x in range(0,len(flux_data)-1)]
         graph.add_plot(plot)
         #

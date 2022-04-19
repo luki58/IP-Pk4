@@ -82,7 +82,7 @@ BoxLayout:
             id: setup
             title: 'Exp Setup'
             Image:
-                source: 'imgs/pk4-setup.png'
+                source: 'imgs/pk4-setup110422.png'
 
 <Tab>:
 
