@@ -187,12 +187,9 @@ BoxLayout:
         halign: 'center'
 """
 
-
 class Tab(MDFloatLayout, MDTabsBase):
     """Class implementing content for a tab."""
     
-
-
 class Ippk4App(MDApp):
     def build(self):
         self.theme_cls.theme_style = "Dark"
@@ -232,7 +229,7 @@ class Ippk4App(MDApp):
             flux_data = Flux(Data_raw, 40)
         elif self.datalen <= 300:
             flux_data = Flux(Data_raw, 80)
-        elif self.datalen >= 300:
+        else: #self.datalen >= 300:
             flux_data = Flux(Data_raw, 140) 
         #
         graph = Graph(xlabel='Frames', ylabel='Flux', y_ticks_minor=2,
