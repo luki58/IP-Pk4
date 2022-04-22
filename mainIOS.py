@@ -77,14 +77,14 @@ BoxLayout:
                 id:fluxbutton
                 pos_hint:{'center_x': .85, 'center_y': .85}
                 size: dp(15), dp(15)
-                text: "Go Flux"
+                text: "Go Flux Raw"
                 on_press: app.flux()
                 disabled: True
                 
             BoxLayout:
                 id:range1
                 orientation: 'horizontal'
-                pos_hint:{'center_x': .42, 'center_y': .4}
+                pos_hint:{'center_x': .41, 'center_y': .4}
                 size_hint: (.3,.3)
                 spacing: "20dp"
                 padding: "20dp"
@@ -95,6 +95,7 @@ BoxLayout:
                     pos_hint:{'center_y': .5}
                 
                 MDTextFieldRect:
+                    id:fluxcutl
                     size_hint: 1, None
                     height: "30dp"
                     pos_hint:{'center_y': .5}
@@ -108,7 +109,7 @@ BoxLayout:
             BoxLayout:
                 id:range2
                 orientation: 'horizontal'
-                pos_hint:{'center_x': .42, 'center_y': .25}
+                pos_hint:{'center_x': .41, 'center_y': .25}
                 size_hint: (.3,.3)
                 spacing: "20dp"
                 padding: "20dp"
@@ -119,6 +120,7 @@ BoxLayout:
                     pos_hint:{'center_y': .5}
                 
                 MDTextFieldRect:
+                    id:fluxcutr
                     size_hint: 1, None
                     height: "30dp"
                     input_filter: 'int'
@@ -128,8 +130,20 @@ BoxLayout:
                     icon: "minus"
                     font_size: "18sp"
                     pos_hint:{'center_y': .5}
-                
             
+            BoxLayout:
+                orientation: 'horizontal'
+                pos_hint:{'center_x': .52, 'center_y': .1}
+                size_hint: (.3,.3)
+                    
+                MDFloatingActionButton:
+                    id:processflux
+                    icon: "refresh"
+                    font_size: "18sp"
+                    pos_hint:{'center_x': .5, 'center_y': .5}
+                    on_press: app.cutimagerange()
+                    disabled: True
+                    
         Tab:
             id: imagereduction
             title: 'Image Overview Reduction'
@@ -242,6 +256,20 @@ class Ippk4App(MDApp):
         self.root.ids.fluxbox.add_widget(graph)
         #
         #self.root.ids.overviewbox.add_widget(graph)
+        #
+        self.root.ids.processflux.disabled = False
+        
+    def cutimagerange(self):
+        if self.root.ids.fluxcutl.text != '' and self.root.ids.fluxcutr.text != '':
+            l = int(self.root.ids.fluxcutl.text)
+            r = int(self.root.ids.fluxcutr.text)
+            if l >= 0 and l <= r and r <= self.datalen:
+                global Data_processed
+                Data_processed = Data_raw[l:r]
+                self.root.ids.processflux.md_bg_color = [0,1,0,0.5]
+            else:
+                self.root.ids.processflux.md_bg_color = [1,0,0,0.5]
+            
 
 if __name__ == "__main__":
     Ippk4App().run()
