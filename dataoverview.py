@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pims
-
+import scipy.special as scsp
 # change the following to %matplotlib notebook for interactive plotting
 #get_ipython().run_line_magic('matplotlib', 'inline')
 
@@ -183,6 +183,23 @@ def Dataoverview(data, res_step):
     return grayscaleh, grayscalev
     
 ## main ##
+
+R = 300. #mm
+r = np.linspace(0., R, 1000)
+
+E_radial = 2.4 * (0.03/0.3)*(scsp.jv(1, (2.4*r/R))/scsp.jv(0, (2.4*r/R)))
+
+fig, ax = plt.subplots()
+ax.plot(r, scsp.jv(1, (2.4*r/R))/scsp.jv(0, (2.4*r/R)), label=f'$J_{1}/J_{0}$')
+ax.legend()
+plt.show()
+
+fig, ax = plt.subplots()
+ax.plot(r, E_radial, label='E_rad')
+plt.xlabel('mm')
+plt.ylabel('E[V/m]')
+ax.legend()
+plt.show()
 
 #dataoverview(data,40)
 #a = Flux(data,40)
