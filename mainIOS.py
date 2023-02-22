@@ -17,14 +17,14 @@ from kivymd.uix.dialog import MDDialog
 
 import pims
 
-from dataoverview import Flux, Dataoverview 
+from dataoverview import Flux, Dataoverview, Flux_frame 
 
 KV = """
 BoxLayout:
     orientation: 'vertical'
     id: boxlay
 
-    MDToolbar:
+    MDTopAppBar:
         id: toolbar
         type_height: 'small'
         title: 'PK-4 Pipeline' 
@@ -58,7 +58,7 @@ BoxLayout:
                 
         Tab:
             id: fluxreduction
-            title: 'Flux-Based Reduction'
+            title: 'Flux-Based Reduction Over Time'
         
             BoxLayout:
                 id:fluxbox
@@ -135,41 +135,46 @@ BoxLayout:
                 orientation: 'horizontal'
                 pos_hint:{'center_x': .52, 'center_y': .1}
                 size_hint: (.3,.3)
-                    
-                MDFloatingActionButton:
-                    id:processflux
-                    icon: "refresh"
-                    font_size: "18sp"
-                    pos_hint:{'center_x': .5, 'center_y': .5}
-                    on_press: app.cutimagerange()
-                    disabled: True
-                    
+                                    
         Tab:
             id: imagereduction
-            title: 'Image Overview Reduction'
+            title: 'Image Size Reduction'
         
             BoxLayout:
-                id:overviewbox
+                id:imagebox
                 orientation: 'horizontal'
                 pos_hint:{'center_x': .35, 'center_y': .5}
                 kepp_ratio: True
                 allow_strech: True
                 size_hint: (.4,.4)
             
-            MDSlider:
-                id:slider1
-                pos_hint:{'center_x': .35, 'center_y': .2}
-                size_hint_x: .55
-                min: 0
-                max: 100
+            MDTextFieldRect:
+                id:cuth1
+                pos_hint:{'center_x': .3, 'center_y': .2}
+                size_hint: 0.1, None
+                height: "30dp"
+                input_filter: 'int'
             
-            MDSlider:
-                id:slider2
-                pos_hint:{'center_x': .35, 'center_y': .1}
-                size_hint_x: .55
-                min: 0
-                max: 100
-                value: self.max
+            MDTextFieldRect:
+                id:cuth2
+                pos_hint:{'center_x': .5, 'center_y': .2}
+                size_hint: 0.1, None
+                height: "30dp"
+                input_filter: 'int'
+            
+            MDTextFieldRect:
+                id:cutv1
+                pos_hint:{'center_x': .3, 'center_y': .1}
+                size_hint: 0.1, None
+                height: "30dp"
+                input_filter: 'int'
+            
+            MDTextFieldRect:
+                id:cutv2
+                pos_hint:{'center_x': .5, 'center_y': .1}
+                size_hint: 0.1, None
+                height: "30dp"
+                input_filter: 'int'
             
             MDFloatingActionButton:
                 icon: "information-variant"
@@ -180,7 +185,7 @@ BoxLayout:
                 id:overviewbutton
                 pos_hint:{'center_x': .75, 'center_y': .6}
                 size: dp(15), dp(15)
-                text: "Go Overview"
+                text: "Go Cut Image Size"
                 on_press: app.overview()
                 disabled: True
         
@@ -211,10 +216,10 @@ class Ippk4App(MDApp):
         return Builder.load_string(KV)
     
     def inputpath(self):
-        path = self.root.ids.path.text
+        self.path = self.root.ids.path.text
         self.root.ids.path.text = ''
-        if os.path.exists(path) == True:            #read data
-            datalist = os.listdir(path)
+        if os.path.exists(self.path) == True:            #read data
+            datalist = os.listdir(self.path)
             datacheck = False
             for i in datalist:
                 if i[-1] == 'p':
@@ -222,7 +227,7 @@ class Ippk4App(MDApp):
                     break;
             if datacheck != False:
                 global Data_raw
-                Data_raw = pims.open(path+"/*.bmp")    
+                Data_raw = pims.open(self.path+"/*.bmp")    
                 self.root.ids.path.hint_text = 'Loaded Successfully'
                 self.root.ids.fluxbutton.disabled = False
                 self.root.ids.overviewbutton.disabled = False
@@ -235,30 +240,94 @@ class Ippk4App(MDApp):
             self.root.ids.fluxbutton.disabled = True
 
     def flux(self):
+        self.root.ids.fluxbutton.md_bg_color = [1,0,0,0.5]
         self.root.ids.fluxbox.clear_widgets()
         #
-        if self.datalen <= 50:
-            flux_data = Flux(Data_raw, 20)
-        elif self.datalen <= 100:
-            flux_data = Flux(Data_raw, 40)
-        elif self.datalen <= 300:
-            flux_data = Flux(Data_raw, 80)
-        else: #self.datalen >= 300:
-            flux_data = Flux(Data_raw, 140) 
+        cutl = self.root.ids.fluxcutl.text
+        cutr = self.root.ids.fluxcutr.text
         #
-        graph = Graph(xlabel='Frames', ylabel='Flux', y_ticks_minor=2,
-        y_grid_label=True, x_grid_label=True, y_ticks_major=3, x_ticks_major= int(self.datalen/11), x_ticks_minor=2,
-        x_grid=True, y_grid=True, xmin=0, xmax=len(flux_data), ymin=int(np.amin(flux_data)-0.5), ymax=int(np.amax(flux_data)+0.5))
-        plot = LinePlot(color=[0, 0, 1, 1], line_width=1.2)
-        plot.points = [(x,flux_data[x]) for x in range(0,len(flux_data)-1)]
-        graph.add_plot(plot)
+        if cutl != '' and cutr != '':
+            if int(cutl) >= 0 and int(cutr) >= 0:
+                cutr_int = int(cutr)
+                cutl_int = int(cutl)
+                datalen = self.datalen
+                #
+                if datalen <= 50:   #define iteratino step wihtin frame
+                    step = 20
+                elif datalen <= 100:
+                    step = 40
+                elif datalen <= 300:
+                    step = 80
+                else: #self.datalen >= 300:
+                    step = 140
+                #
+                if cutl_int >= 0 and cutr_int > cutl_int and cutr_int < datalen:
+                    datalen = cutr_int - cutl_int
+                    Data_cut = Data_raw[cutl_int:cutr_int]
+                #
+                flux_data = np.zeros((datalen), dtype=float)
+                for i in range(datalen):
+                    flux_data[i] = Flux_frame(Data_cut[i],step)
+                #
+                graph = Graph(xlabel='Frames', ylabel='Flux', y_ticks_minor=2,
+                y_grid_label=True, x_grid_label=True, y_ticks_major=3, x_ticks_major= int(self.datalen/11), x_ticks_minor=2,
+                x_grid=True, y_grid=True, xmin=0, xmax=len(flux_data), ymin=int(np.amin(flux_data)-0.5), ymax=int(np.amax(flux_data)+0.5))
+                plot = LinePlot(color=[0, 0, 1, 1], line_width=1.2)
+                plot.points = [(x,flux_data[x]) for x in range(0,len(flux_data)-1)]
+                graph.add_plot(plot)
+                #
+                arr_ref =  np.arange(len(flux_data))
+                plt.style.use(['science','no-latex'])
+                fig, ax = plt.subplots(dpi=180)
+                ax.plot(arr_ref, flux_data)
+                ax.grid(color='grey', linestyle='-', linewidth=0.2, alpha=0.5)
+                ax.text(0.05, 0.95, "Average Flux per Image", transform=ax.transAxes, fontsize=8, verticalalignment='top')
+                plt.savefig("GraphSection"+self.path[-5:]+".png")
+        else:
+            print('No pre selection, Flux is calculated for full set!')
+            self.root.ids.fluxcutl.text = '0'
+            self.root.ids.fluxcutr.text = str(self.datalen)
+            cutl_int = 0
+            cutr_int = self.datalen
+            datalen = self.datalen
+            #
+            if datalen <= 50:   #define iteratino step wihtin frame
+                step = 20
+            elif datalen <= 100:
+                step = 40
+            elif datalen <= 300:
+                step = 80
+            else: #self.datalen >= 300:
+                step = 140
+            #
+            flux_data = np.zeros((datalen), dtype=float)
+            for i in range(datalen):
+                flux_data[i] = Flux_frame(Data_raw[i],step)
+            #
+            graph = Graph(xlabel='Frames', ylabel='Flux', y_ticks_minor=2,
+            y_grid_label=True, x_grid_label=True, y_ticks_major=3, x_ticks_major= int(self.datalen/11), x_ticks_minor=2,
+            x_grid=True, y_grid=True, xmin=0, xmax=len(flux_data), ymin=int(np.amin(flux_data)-0.5), ymax=int(np.amax(flux_data)+0.5))
+            plot = LinePlot(color=[0, 0, 1, 1], line_width=1.2)
+            plot.points = [(x,flux_data[x]) for x in range(0,len(flux_data)-1)]
+            graph.add_plot(plot)
+            #
+            arr_ref =  np.arange(len(flux_data))
+            plt.style.use(['science','no-latex'])
+            fig, ax = plt.subplots(dpi=180)
+            ax.plot(arr_ref, flux_data)
+            ax.grid(color='grey', linestyle='-', linewidth=0.2, alpha=0.5)
+            ax.text(0.05, 0.95, "Average Flux per Image", transform=ax.transAxes, fontsize=8, verticalalignment='top')
+            plt.savefig("Graph"+self.path[-5:]+".png")
         #
         self.root.ids.fluxbox.add_widget(graph)
         #
         #self.root.ids.overviewbox.add_widget(graph)
         #
-        self.root.ids.processflux.disabled = False
-        
+        self.root.ids.fluxbutton.md_bg_color = [0,1,0,0.5]
+    
+    #def imagesize(self):
+    
+    
     def cutimagerange(self):
         if self.root.ids.fluxcutl.text != '' and self.root.ids.fluxcutr.text != '':
             l = int(self.root.ids.fluxcutl.text)
@@ -268,8 +337,7 @@ class Ippk4App(MDApp):
                 Data_processed = Data_raw[l:r]
                 self.root.ids.processflux.md_bg_color = [0,1,0,0.5]
             else:
-                self.root.ids.processflux.md_bg_color = [1,0,0,0.5]
-            
+                self.root.ids.overviewbutton.md_bg_color = [1,0,0,0.5]
 
 if __name__ == "__main__":
     Ippk4App().run()
