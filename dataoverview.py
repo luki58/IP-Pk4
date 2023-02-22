@@ -23,7 +23,7 @@ import scipy.special as scsp
 def grayscale_h(frame,res_step):
     imgshape = frame.shape
     grayscale = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
-    
+
     for column in range(0,imgshape[0],res_step):
         sumpixel = 0
         for row in range(0,imgshape[1],res_step):
@@ -32,12 +32,12 @@ def grayscale_h(frame,res_step):
     return grayscale
 
 ### --- Generate Greyscale Vertical ---- ###
-       
+
 def grayscale_v(frame,res_step):
     count = 0
     imgshape = frame.shape
     grayscale = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
-    
+
     for column in range(0,imgshape[0],res_step):
         sumpixel = 0
         count += 1
@@ -72,18 +72,18 @@ def grayscaleplot2(datah, datav):
     #ax.set_title('')
     #plt.xlabel('Pixel')
     #plt.ylabel('Grayvalue')
-    
+
     #change axis direction
     #ax.invert_yaxis()
     #ax.xaxis.tick_top()
     #ax.xaxis.set_label_position('top')
     #ax.xaxis.set
-    
+
     #removing top and right borders
     #ax.spines['top'].set_visible(False)
-    #ax.spines['right'].set_visible(False) 
-    
-    #Edit tick 
+    #ax.spines['right'].set_visible(False)
+
+    #Edit tick
     #ax.xaxis.set_minor_locator(MultipleLocator(125))
     #ax.yaxis.set_minor_locator(MultipleLocator(.25))
 
@@ -93,13 +93,13 @@ def grayscaleplot2(datah, datav):
 
     #adds major gridlines
     #ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
-    
+
     #ax limit
     #ax.set_xlim(xmin=0)
-    
+
     #legend
     #ax.legend(bbox_to_anchor=(1, 1), loc=1, frameon=False, fontsize=16)
-    
+
     plt.show()
 
 def plot(data):
@@ -125,18 +125,18 @@ def plot(data):
     #ax.set_title('')
     plt.ylabel('Flux')
     plt.xlabel('Image')
-    
+
     #change axis direction
     #ax.invert_yaxis()
     #ax.xaxis.tick_top()
     #ax.xaxis.set_label_position('top')
     #ax.xaxis.set
-    
+
     #removing top and right borders
     #ax.spines['top'].set_visible(False)
-    #ax.spines['right'].set_visible(False) 
-    
-    #Edit tick 
+    #ax.spines['right'].set_visible(False)
+
+    #Edit tick
     #ax.xaxis.set_minor_locator(MultipleLocator(125))
     #ax.yaxis.set_minor_locator(MultipleLocator(.25))
 
@@ -146,16 +146,16 @@ def plot(data):
 
     #adds major gridlines
     #ax.grid(color='grey', linestyle='-', linewidth=0.25, alpha=0.5)
-    
+
     #ax limit
     #ax.set_xlim(xmin=0)
-    
+
     #legend
     #ax.legend(bbox_to_anchor=(1, 1), loc=1, frameon=False, fontsize=16)
-    
+
     ### save plot ###
     plt.savefig('fluxplotP29.png')
-    
+
     plt.show()
 
 ### --- Flux Over Time --- ###
@@ -164,7 +164,7 @@ def Flux(data,res_step):
     pointer = 0
     imgshape = data[0].shape
     flux = np.zeros(len(data), dtype=float)
-    
+
     for frame in data:
         grayscale = np.empty(int(imgshape[1]/res_step)+1, dtype=float)
         for column in range(0,imgshape[0],res_step):
@@ -175,7 +175,7 @@ def Flux(data,res_step):
         flux[pointer] = flux[pointer] + sum(grayscale)
         pointer += 1
     return flux
-    #plot(flux)   
+    #plot(flux)
 
 ### --- Flux over Time of single frame --- ###
 
@@ -188,23 +188,23 @@ def Flux_frame(data,res_step):
             sumpixel += data[column][row]
         grayscale[int(column/res_step)] = sumpixel/int(imgshape[0]/res_step);
     return sum(grayscale);
-        
+
 ### --- Data Overview ---- ###
 
 def Dataoverview(data, res_step):
     imgshape = data[0].shape
     grayscaleh = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
     grayscalev = np.zeros(int(imgshape[1]/res_step)+1, dtype=float)
-    
+
     for frame in data:
         grayscaleh += grayscale_h(frame,res_step)
-        grayscalev += grayscale_v(frame,res_step)        
+        grayscalev += grayscale_v(frame,res_step)
     grayscaleh = grayscaleh/len(data)
     grayscalev = grayscalev/len(data)
-    
+
     #grayscaleplot2(grayscaleh, grayscalev)
     return grayscaleh, grayscalev
-    
+
 ## main ##
 #%%
 frames = pims.open('C:/Users/Lukas Wimmer/Documents/GitHub/DustyPlasmaTrackpy/pfc37p29/*.bmp')
@@ -212,9 +212,26 @@ data0 = frames[0]
 grayscaled0 = grayscale_v(data0, 5)
 peaks, _ = find_peaks(grayscaled0,height=3)
 
-avrg_pos = (sum(peaks)/len(peaks)) * 5 * 0.018 #5 stepsize, 0.018mm/pixel 
+avrg_pos = (sum(peaks)/len(peaks)) * 5 * 0.018 #5 stepsize, 0.018mm/pixel
 
 pos_from_center = abs(15 - avrg_pos)
+
+R = 300. #mm
+r = np.linspace(0., R, 1000)
+
+E_radial = 2.4 * (0.03/0.3)*(scsp.jv(1, (2.4*r/R))/scsp.jv(0, (2.4*r/R)))
+
+fig, ax = plt.subplots()
+ax.plot(r, scsp.jv(1, (2.4*r/R))/scsp.jv(0, (2.4*r/R)), label=f'$J_{1}/J_{0}$')
+ax.legend()
+plt.show()
+
+fig, ax = plt.subplots()
+ax.plot(r, E_radial, label='E_rad')
+plt.xlabel('mm')
+plt.ylabel('E[V/m]')
+ax.legend()
+plt.show()
 
 #dataoverview(data,40)
 #data6 = pims.open('C:/Users/Lukas Wimmer/Desktop/D3100Pa/XiQ_20210721_073956_Day#03_Parabola#00/*.bmp')
@@ -230,7 +247,7 @@ pos_from_center = abs(15 - avrg_pos)
 #data11 = pims.open('C:/Users/Lukas Wimmer/Desktop/D3100Pa/XiQ_20210721_075456_Day#03_Parabola#05/*.bmp')
 #a11 = Flux(data11,20)
 
-###Plot with science plot lib 
+###Plot with science plot lib
 #%%
 plt.style.use(['science','no-latex'])
 fig,ax = plt.subplots(dpi=600)
